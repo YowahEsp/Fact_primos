@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DESCOMPOSICIÓN EN FACTORES PRIMOS</title>
+    <style>
+        :root{
+            --green-1: #43cea2;
+            --green-2: #2e7d32;
+            --green-3: #1b5e20;
+            --bg-start: #43cea2;
+            --bg-end: #185a9d;
+            --math-font-family: "Courier New", monospace;
+            --math-font-size: 16px; /* tamaño uniforme para factorización y resultados */
+        }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+
+        body{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+        }
+
+        .container{
+            width:100%;
+            max-width:920px;
+            background:#fff;
+            border-radius:18px;
+            padding:36px;
+            box-shadow:0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        h1{
+            color:var(--green-2);
+            text-align:center;
+            margin-bottom:22px;
+            font-size:1.9rem;
+        }
+
+        .input-section{margin-bottom:20px}
+
+        .quantity-selector{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            justify-content:center;
+            flex-wrap:wrap;
+            margin-bottom:18px;
+        }
+
+        .quantity-selector label{font-weight:600;color:#333}
+
+        .quantity-selector input{
+            width:90px;padding:10px;border:2px solid #e6e6e6;border-radius:10px;text-align:center;
+        }
+
+        .numbers-container{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:14px;
+            margin-bottom:14px;
+        }
+
+        .number-input-wrapper label{color:var(--green-2);font-weight:600;margin-bottom:6px;display:block}
+
+        input[type="number"]{
+            padding:10px;border-radius:10px;border:2px solid #e6e6e6;font-size:15px;
+        }
+
+        input[type="number"]:focus{outline:none;border-color:var(--green-2)}
+
+        .button-container{
+            display:flex;
+            gap:10px;
+            justify-content:center;
+            margin-top:6px;
+        }
+
+        button{
+            background: linear-gradient(135deg,var(--green-1) 0%, var(--green-2) 100%);
+            color:white;border:0;padding:12px 22px;border-radius:10px;font-weight:700;
+            cursor:pointer; transition: transform .15s;
+        }
+        button:hover{transform:translateY(-3px)}
+        button:active{transform:translateY(0)}
+
+        .results{margin-top:20px}
+
+        .factorization-container{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:18px;
+            margin-bottom:18px;
+        }
+
+        .factorization{
+            background:#f8f9fa;padding:18px;border-radius:12px;
+        }
+
+        .factorization h3{color:var(--green-2);text-align:center;margin-bottom:12px;font-size:1.05rem}
+
+        /* ---------- UNIFORMIDAD TIPOGRÁFICA Y TAMAÑO PARA "RESULTADOS MATEMÁTICOS" ---------- */
+        /* Aplicamos la misma fuente y el mismo tamaño a:
+           - el diagrama de factorización (division-table)
+           - las fórmulas (class .formula)
+           - los bloques de resultado (result-item y result-value)
+        */
+        .math {
+            font-family: var(--math-font-family);
+            font-size: var(--math-font-size);
+            line-height: 1.3;
+        }
+
+        /* Diagrama: tabla con borde vertical continuo */
+        .division-table{
+            width:100%;
+            margin:0 auto 8px auto;
+            border-collapse:collapse;
+            display:table;
+        }
+        .division-row{display:table-row}
+        .number{
+            display:table-cell;
+            text-align:right;
+            padding:6px 14px;
+            border-right:3px solid var(--green-2); /* línea continua */
+            font-weight:700;
+        }
+        .prime{
+            display:table-cell;
+            text-align:left;
+            padding:6px 14px;
+            color:var(--green-3);
+            font-weight:700;
+        }
+
+        .result-box{
+            background:#e8f5e9;padding:16px;border-radius:12px;
+        }
+
+        .result-item{
+            background:white;padding:12px;border-radius:8px;border-left:4px solid var(--green-2);
+            margin-bottom:12px;
+        }
+
+        .result-item h4{color:var(--green-2);margin-bottom:8px;font-size:0.98rem}
+
+        .result-value{
+            font-weight:800;
+            margin-bottom:6px;
+            display:inline-block;
+        }
+
+        .formula{color:#444;margin-top:6px;display:block}
+
+        /* Error */
+        .error{background:#ffebee;color:#c62828;padding:12px;border-radius:8px;border-left:4px solid #c62828}
+
+        /* Hacemos que tanto la tabla como la fórmula y el valor del resultado tengan la clase .math
+           para asegurarnos de que usan exactamente la misma fuente y tamaño. */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DESCOMPOSICIÓN EN FACTORES PRIMOS</h1>
+
+        <div class="input-section">
+            <div class="quantity-selector">
+                <label for="cantidad">¿Cuántos números quieres factorizar?</label>
+                <input type="number" id="cantidad" min="1" max="10" value="2" />
+                <button type="button" onclick="generarCampos()">Generar campos</button>
+            </div>
+
+            <div id="numbersContainer" class="numbers-container"></div>
+
+            <div class="button-container">
+                <button type="button" onclick="calcular()">Calcular factorización, m.c.m. y M.C.D.</button>
+                <button type="button" onclick="limpiar()">Limpiar</button>
+            </div>
+        </div>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        /* ---------- Funciones principales ---------- */
+
+        function generarCampos() {
+            const cantidad = parseInt(document.getElementById('cantidad').value, 10);
+            const container = document.getElementById('numbersContainer');
+            if (!cantidad || cantidad < 1 || cantidad > 10) {
+                alert('Por favor, introduce un número entre 1 y 10');
+                return;
+            }
+            let html = '';
+            for (let i = 1; i <= cantidad; i++) {
+                html += `
+                    <div class="number-input-wrapper">
+                        <label for="num${i}">Número ${i}</label>
+                        <input type="number" id="num${i}" placeholder="Número ${i}" min="2" />
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            // limpiar resultados previos al regenerar
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function limpiar() {
+            // Restablece estado inicial: cantidad = 2, campos vacíos y resultados borrados
+            document.getElementById('cantidad').value = 2;
+            generarCampos();
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function factorizar(n) {
+            const pasos = [];
+            const factores = {};
+            let actual = n;
+            let divisor = 2;
+
+            while (actual > 1) {
+                if (actual % divisor === 0) {
+                    pasos.push({ numero: actual, primo: divisor });
+                    factores[divisor] = (factores[divisor] || 0) + 1;
+                    actual = actual / divisor;
+                } else {
+                    divisor++;
+                }
+            }
+            // último paso: 1 | 1
+            pasos.push({ numero: 1, primo: 1 });
+            return { pasos, factores };
+        }
+
+        function generarTablaFactorizacion(n) {
+            const { pasos } = factorizar(n);
+            // La tabla tendrá la clase 'math' para garantizar fuente y tamaño iguales
+            let html = '<div class="division-table math">';
+            pasos.forEach(paso => {
+                html += `
+                    <div class="division-row">
+                        <div class="number">${paso.numero}</div>
+                        <div class="prime">${paso.primo}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function factoresAFormula(factores) {
+            // Devuelve una cadena con <sup> para exponentes.
+            const partes = [];
+            // Ordenar factores por primo ascendente para consistencia visual
+            const primos = Object.keys(factores).map(Number).sort((a,b)=>a-b);
+            primos.forEach(primo => {
+                const exp = factores[primo];
+                if (exp === 1) partes.push(String(primo));
+                else partes.push(`${primo}<sup>${exp}</sup>`);
+            });
+            return partes.join(' × ');
+        }
+
+        function calcularMCDMultiple(listaFactores) {
+            if (listaFactores.length === 0) return { mcd: 1, mcdFactores: {} };
+            const mcdFactores = {};
+            let mcd = 1;
+            // Tomar la lista de primos del primer número
+            const primosComunes = Object.keys(listaFactores[0]).map(Number);
+            primosComunes.forEach(primo => {
+                let existeEnTodos = true;
+                let exponenteMinimo = listaFactores[0][primo];
+                for (let i = 1; i < listaFactores.length; i++) {
+                    if (!listaFactores[i][primo]) {
+                        existeEnTodos = false;
+                        break;
+                    }
+                    exponenteMinimo = Math.min(exponenteMinimo, listaFactores[i][primo]);
+                }
+                if (existeEnTodos) {
+                    mcdFactores[primo] = exponenteMinimo;
+                    mcd *= Math.pow(primo, exponenteMinimo);
+                }
+            });
+            return { mcd, mcdFactores };
+        }
+
+        function calcularMCMMultiple(listaFactores) {
+            if (listaFactores.length === 0) return { mcm: 1, mcmFactores: {} };
+            const mcmFactores = {};
+            let mcm = 1;
+            const todosPrimos = new Set();
+            listaFactores.forEach(factores => {
+                Object.keys(factores).forEach(primo => todosPrimos.add(Number(primo)));
+            });
+            Array.from(todosPrimos).forEach(primo => {
+                let exponenteMaximo = 0;
+                listaFactores.forEach(factores => {
+                    if (factores[primo]) exponenteMaximo = Math.max(exponenteMaximo, factores[primo]);
+                });
+                if (exponenteMaximo > 0) {
+                    mcmFactores[primo] = exponenteMaximo;
+                    mcm *= Math.pow(primo, exponenteMaximo);
+                }
+            });
+            return { mcm, mcmFactores };
+        }
+
+        function calcular() {
+            const cantidad = parseInt(document.getElementById('cantidad').value, 10);
+            const resultsDiv = document.getElementById('results');
+            if (!cantidad || cantidad < 1) {
+                resultsDiv.innerHTML = '<div class="error">Por favor, genera los campos primero</div>';
+                return;
+            }
+
+            const numeros = [];
+            const factorizaciones = [];
+
+            for (let i = 1; i <= cantidad; i++) {
+                const el = document.getElementById(`num${i}`);
+                if (!el) {
+                    resultsDiv.innerHTML = '<div class="error">Campos no encontrados. Genera los campos de nuevo.</div>';
+                    return;
+                }
+                const valor = parseInt(el.value, 10);
+                if (!valor || valor < 2) {
+                    resultsDiv.innerHTML = `<div class="error">Por favor, ingresa un valor mayor o igual a 2 en el Número ${i}</div>`;
+                    return;
+                }
+                numeros.push(valor);
+                factorizaciones.push(factorizar(valor));
+            }
+
+            // Construir HTML de salida
+            let html = '<div class="factorization-container">';
+
+            numeros.forEach((num, index) => {
+                // La fórmula también usa clase 'math' para unificar tipo y tamaño
+                const formulaHtml = `${num} = ${factoresAFormula(factorizaciones[index].factores) || num}`;
+                html += `
+                    <div class="factorization">
+                        <h3>Factorización de ${num}</h3>
+                        ${generarTablaFactorizacion(num)}
+                        <div class="formula math">${formulaHtml}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            if (numeros.length > 1) {
+                const listaFactores = factorizaciones.map(f => f.factores);
+                const { mcd, mcdFactores } = calcularMCDMultiple(listaFactores);
+                const { mcm, mcmFactores } = calcularMCMMultiple(listaFactores);
+
+                // Mostrar resultados; usar clase math donde corresponde para mantener fuente/tamaño
+                html += `
+                    <div class="result-box">
+                        <div class="result-item math">
+                            <h4>M.C.D. de ${numeros.join(', ')}</h4>
+                            <div class="result-value math">${mcd}</div>
+                            ${Object.keys(mcdFactores).length > 0 ? `<div class="formula math">M.C.D. = ${factoresAFormula(mcdFactores)}</div>` : '<div class="formula math">No hay factores comunes</div>'}
+                        </div>
+
+                        <div class="result-item math">
+                            <h4>m.c.m. de ${numeros.join(', ')}</h4>
+                            <div class="result-value math">${mcm}</div>
+                            <div class="formula math">m.c.m. = ${factoresAFormula(mcmFactores)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Generar campos al cargar
+        window.addEventListener('load', () => {
+            generarCampos();
+        });
+    </script>
+</body>
+</html>
