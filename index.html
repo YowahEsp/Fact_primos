@@ -12,7 +12,7 @@
             --bg-start: #43cea2;
             --bg-end: #185a9d;
             --math-font-family: "Courier New", monospace;
-            --math-font-size: 16px; /* tamaño uniforme para factorización y resultados */
+            --math-font-size: 16px;
         }
 
         *{box-sizing:border-box;margin:0;padding:0}
@@ -79,6 +79,7 @@
             display:flex;
             gap:10px;
             justify-content:center;
+            flex-wrap:wrap;
             margin-top:6px;
         }
 
@@ -105,19 +106,12 @@
 
         .factorization h3{color:var(--green-2);text-align:center;margin-bottom:12px;font-size:1.05rem}
 
-        /* ---------- UNIFORMIDAD TIPOGRÁFICA Y TAMAÑO PARA "RESULTADOS MATEMÁTICOS" ---------- */
-        /* Aplicamos la misma fuente y el mismo tamaño a:
-           - el diagrama de factorización (division-table)
-           - las fórmulas (class .formula)
-           - los bloques de resultado (result-item y result-value)
-        */
         .math {
             font-family: var(--math-font-family);
             font-size: var(--math-font-size);
             line-height: 1.3;
         }
 
-        /* Diagrama: tabla con borde vertical continuo */
         .division-table{
             width:100%;
             margin:0 auto 8px auto;
@@ -129,7 +123,7 @@
             display:table-cell;
             text-align:right;
             padding:6px 14px;
-            border-right:3px solid var(--green-2); /* línea continua */
+            border-right:3px solid var(--green-2);
             font-weight:700;
         }
         .prime{
@@ -159,11 +153,78 @@
 
         .formula{color:#444;margin-top:6px;display:block}
 
-        /* Error */
         .error{background:#ffebee;color:#c62828;padding:12px;border-radius:8px;border-left:4px solid #c62828}
 
-        /* Hacemos que tanto la tabla como la fórmula y el valor del resultado tengan la clase .math
-           para asegurarnos de que usan exactamente la misma fuente y tamaño. */
+        /* ---------- ESTILO PARA LA TABLA DE PRIMOS (INTEGRADO) ---------- */
+        #tablaPrimosContainer {
+            margin-top: 30px;
+            display: none; /* Oculta por defecto */
+        }
+
+        .primos-header {
+            text-align: center;
+            margin-bottom: 16px;
+            color: var(--green-2);
+            font-size: 1.4rem;
+        }
+
+        .table-wrapper-primos {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        #tablaPrimos {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        #tablaPrimos th, #tablaPrimos td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        #tablaPrimos th {
+            background: #2980b9;
+            color: white;
+            font-weight: 600;
+            padding: 10px;
+        }
+
+        /* Separadores cada 2 columnas */
+        #tablaPrimos th:nth-child(2n), #tablaPrimos td:nth-child(2n) {
+            border-right: 4px solid #2980b9;
+        }
+
+        #tablaPrimos th:last-child, #tablaPrimos td:last-child {
+            border-right: none;
+        }
+
+        #tablaPrimos tr:hover {
+            background-color: #f8fbff;
+        }
+
+        @media (max-width: 768px) {
+            #tablaPrimos th, #tablaPrimos td {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+            #tablaPrimos th:nth-child(2n), #tablaPrimos td:nth-child(2n) {
+                border-right: 3px solid #2980b9;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #tablaPrimos th, #tablaPrimos td {
+                padding: 5px;
+                font-size: 0.72rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -182,14 +243,27 @@
             <div class="button-container">
                 <button type="button" onclick="calcular()">Calcular factorización, m.c.m. y M.C.D.</button>
                 <button type="button" onclick="limpiar()">Limpiar</button>
+                <!-- ✅ NUEVO BOTÓN -->
+                <button type="button" onclick="toggleTablaPrimos()">Ver/Ocultar tabla de primos</button>
             </div>
         </div>
 
         <div id="results" class="results"></div>
+
+        <!-- ✅ CONTENEDOR DE LA TABLA DE PRIMOS (OCULTO POR DEFECTO) -->
+        <div id="tablaPrimosContainer">
+            <h2 class="primos-header">Los 1000 primeros números primos</h2>
+            <div class="table-wrapper-primos">
+                <table id="tablaPrimos">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        /* ---------- Funciones principales ---------- */
+        /* ---------- Funciones principales del Código 1 (sin cambios) ---------- */
 
         function generarCampos() {
             const cantidad = parseInt(document.getElementById('cantidad').value, 10);
@@ -208,15 +282,15 @@
                 `;
             }
             container.innerHTML = html;
-            // limpiar resultados previos al regenerar
             document.getElementById('results').innerHTML = '';
         }
 
         function limpiar() {
-            // Restablece estado inicial: cantidad = 2, campos vacíos y resultados borrados
             document.getElementById('cantidad').value = 2;
             generarCampos();
             document.getElementById('results').innerHTML = '';
+            // Opcional: ocultar tabla de primos al limpiar
+            // document.getElementById('tablaPrimosContainer').style.display = 'none';
         }
 
         function factorizar(n) {
@@ -234,14 +308,12 @@
                     divisor++;
                 }
             }
-            // último paso: 1 | 1
             pasos.push({ numero: 1, primo: 1 });
             return { pasos, factores };
         }
 
         function generarTablaFactorizacion(n) {
             const { pasos } = factorizar(n);
-            // La tabla tendrá la clase 'math' para garantizar fuente y tamaño iguales
             let html = '<div class="division-table math">';
             pasos.forEach(paso => {
                 html += `
@@ -256,9 +328,7 @@
         }
 
         function factoresAFormula(factores) {
-            // Devuelve una cadena con <sup> para exponentes.
             const partes = [];
-            // Ordenar factores por primo ascendente para consistencia visual
             const primos = Object.keys(factores).map(Number).sort((a,b)=>a-b);
             primos.forEach(primo => {
                 const exp = factores[primo];
@@ -272,7 +342,6 @@
             if (listaFactores.length === 0) return { mcd: 1, mcdFactores: {} };
             const mcdFactores = {};
             let mcd = 1;
-            // Tomar la lista de primos del primer número
             const primosComunes = Object.keys(listaFactores[0]).map(Number);
             primosComunes.forEach(primo => {
                 let existeEnTodos = true;
@@ -339,11 +408,9 @@
                 factorizaciones.push(factorizar(valor));
             }
 
-            // Construir HTML de salida
             let html = '<div class="factorization-container">';
 
             numeros.forEach((num, index) => {
-                // La fórmula también usa clase 'math' para unificar tipo y tamaño
                 const formulaHtml = `${num} = ${factoresAFormula(factorizaciones[index].factores) || num}`;
                 html += `
                     <div class="factorization">
@@ -361,7 +428,6 @@
                 const { mcd, mcdFactores } = calcularMCDMultiple(listaFactores);
                 const { mcm, mcmFactores } = calcularMCMMultiple(listaFactores);
 
-                // Mostrar resultados; usar clase math donde corresponde para mantener fuente/tamaño
                 html += `
                     <div class="result-box">
                         <div class="result-item math">
@@ -382,7 +448,92 @@
             resultsDiv.innerHTML = html;
         }
 
-        // Generar campos al cargar
+        /* ---------- NUEVAS FUNCIONES PARA LA TABLA DE PRIMOS ---------- */
+
+        let _primosGenerados = false; // Para evitar regenerar
+
+        function generarPrimos(n) {
+            if (n <= 0) return [];
+            const primos = [2];
+            let num = 3;
+            while (primos.length < n) {
+                let esPrimo = true;
+                const raiz = Math.sqrt(num);
+                for (let p of primos) {
+                    if (p > raiz) break;
+                    if (num % p === 0) {
+                        esPrimo = false;
+                        break;
+                    }
+                }
+                if (esPrimo) primos.push(num);
+                num += 2;
+            }
+            return primos;
+        }
+
+        function renderizarTablaPrimos() {
+            if (_primosGenerados) return;
+
+            const TOTAL = 1000;
+            const BLOQUES_POR_FILA = 4;
+            const COLUMNAS = BLOQUES_POR_FILA * 2;
+            const FILAS = Math.ceil(TOTAL / BLOQUES_POR_FILA);
+
+            const primos = generarPrimos(TOTAL);
+            const thead = document.querySelector('#tablaPrimos thead');
+            const tbody = document.querySelector('#tablaPrimos tbody');
+
+            // Limpiar en caso de re-render (aunque no debería pasar)
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const headerRow = document.createElement('tr');
+            for (let i = 0; i < BLOQUES_POR_FILA; i++) {
+                headerRow.innerHTML += `<th>Posición</th><th>Primo</th>`;
+            }
+            thead.appendChild(headerRow);
+
+            const celdas = Array(FILAS).fill().map(() => Array(COLUMNAS).fill(null));
+
+            let indice = 0;
+            for (let bloque = 0; bloque < BLOQUES_POR_FILA; bloque++) {
+                const colPos = bloque * 2;
+                const colPri = bloque * 2 + 1;
+                for (let fila = 0; fila < FILAS; fila++) {
+                    if (indice >= TOTAL) break;
+                    celdas[fila][colPos] = indice + 1;
+                    celdas[fila][colPri] = primos[indice];
+                    indice++;
+                }
+            }
+
+            for (let f = 0; f < FILAS; f++) {
+                const tr = document.createElement('tr');
+                let html = '';
+                for (let c = 0; c < COLUMNAS; c++) {
+                    const val = celdas[f][c];
+                    html += `<td>${val !== null ? val : ''}</td>`;
+                }
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            }
+
+            _primosGenerados = true;
+        }
+
+        function toggleTablaPrimos() {
+            const container = document.getElementById('tablaPrimosContainer');
+            const isVisible = container.style.display === 'block';
+            if (isVisible) {
+                container.style.display = 'none';
+            } else {
+                container.style.display = 'block';
+                renderizarTablaPrimos(); // Solo genera la primera vez
+            }
+        }
+
+        // Inicializar
         window.addEventListener('load', () => {
             generarCampos();
         });
