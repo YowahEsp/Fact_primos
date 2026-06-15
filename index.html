@@ -11,7 +11,7 @@
             --green-3: #1b5e20;
             --bg-start: #43cea2;
             --bg-end: #185a9d;
-            --math-font-family: "Courier New", monospace;
+            --math-font-family: "DejaVu Sans Mono", "JetBrains Mono", "Cascadia Mono", "Consolas", "Liberation Mono", "Menlo", monospace;
             --math-font-size: 16px;
         }
 
@@ -151,7 +151,7 @@
             display:inline-block;
         }
 
-        .formula{color:#444;margin-top:6px;display:block}
+        .formula{color:#1b3a1f;font-weight:600;margin-top:6px;display:block}
 
         .error{background:#ffebee;color:#c62828;padding:12px;border-radius:8px;border-left:4px solid #c62828}
 
@@ -308,7 +308,7 @@
                     divisor++;
                 }
             }
-            pasos.push({ numero: 1, primo: 1 });
+            pasos.push({ numero: 1, primo: '' });
             return { pasos, factores };
         }
 
@@ -335,7 +335,7 @@
                 if (exp === 1) partes.push(String(primo));
                 else partes.push(`${primo}<sup>${exp}</sup>`);
             });
-            return partes.join(' × ');
+            return partes.join(' · ');
         }
 
         function calcularMCDMultiple(listaFactores) {
