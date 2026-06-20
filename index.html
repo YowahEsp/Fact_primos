@@ -338,6 +338,14 @@
             return partes.join(' · ');
         }
 
+        // ✅ NUEVO: devuelve "fórmula = valor", omitiendo el "= valor" cuando
+        //    la fórmula ya coincide con el número (p. ej. M.C.D. = 3).
+        function formulaConValor(factores, valor) {
+            const f = factoresAFormula(factores);
+            if (!f) return String(valor);
+            return f === String(valor) ? f : `${f} = ${valor}`;
+        }
+
         function calcularMCDMultiple(listaFactores) {
             if (listaFactores.length === 0) return { mcd: 1, mcdFactores: {} };
             const mcdFactores = {};
@@ -432,14 +440,12 @@
                     <div class="result-box">
                         <div class="result-item math">
                             <h4>M.C.D. de ${numeros.join(', ')}</h4>
-                            <div class="result-value math">${mcd}</div>
-                            ${Object.keys(mcdFactores).length > 0 ? `<div class="formula math">M.C.D. = ${factoresAFormula(mcdFactores)}</div>` : '<div class="formula math">No hay factores comunes</div>'}
+                            ${Object.keys(mcdFactores).length > 0 ? `<div class="formula math">M.C.D. = ${formulaConValor(mcdFactores, mcd)}</div>` : '<div class="formula math">No hay factores comunes</div>'}
                         </div>
 
                         <div class="result-item math">
                             <h4>m.c.m. de ${numeros.join(', ')}</h4>
-                            <div class="result-value math">${mcm}</div>
-                            <div class="formula math">m.c.m. = ${factoresAFormula(mcmFactores)}</div>
+                            <div class="formula math">m.c.m. = ${formulaConValor(mcmFactores, mcm)}</div>
                         </div>
                     </div>
                 `;
